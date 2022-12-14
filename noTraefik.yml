@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+ mongodb:
+  image: 127.0.0.1:5000/mongo
+  deploy:
+   #mode: global
+   restart_policy:
+    condition: on-failure
+   placement:
+    constraints: [node.role==manager]
+   labels: [traefik.enable=false]
+  ports:
+   - 27017:27017
+  volumes:
+   - mongoDB:/data/db
+
+ account-manager:
+  image: 127.0.0.1:5000/manage_app
+  environment:
+   - HOST=172.21.99.7
+   - PORT=5011
+   - AUTH_SERVER_ADDR=172.21.99.68
+   - AUTH_SERVER_PORT=2011
+   - MONGO_SERVER_ADDR=172.21.99.7
+   - MONGO_SERVER_PORT=27017
+  deploy:
+   placement:
+    constraints: [node.role==manager]
+  ports:
+   - 5011:5000
+
+ authenticator:
+  image: 127.0.0.1:5000/auth_app
+  environment:
+   - AUTHENTIQ_DB_HOST=172.21.99.7
+   - AUTHENTIQ_DB_PORT=27017
+   - AUTHENTIQ_DB_NAME=authentiq
+  deploy:
+   placement:
+    constraints: [node.role==worker]
+  ports:
+   - 2011:2000
+
+volumes:
+ mongoDB:

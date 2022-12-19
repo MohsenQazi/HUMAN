@@ -73,14 +73,14 @@ account-manager:
    labels:
     - traefik.enable=true
 
-    - traefik.http.services.accounting_account-manager.loadbalancer.server.port=5000
-    - traefik.http.routers.accounting_account-manager.rule=Host(`${DOMAIN}`) #$$ PathPrefix(`/accountico`)
+    - traefik.http.services.accounting_account-manager.loadbalancer.server.port=5000 #doc.traefik.io/traefik/providers/docker/#port-detection_1
+    - traefik.http.routers.accounting_account-manager.rule=Host(`${DOMAIN}`) $$ PathPrefix(`/accountico/`)
     - traefik.http.routers.accounting_account-manager.entrypoints=websecure
-#    - traefik.http.routers.accounting_account-manager.tls=true
-#    - traefik.http.routers.accounting_account-manager.tls.certresolver=letsE
+    - traefik.http.routers.accounting_account-manager.tls=true
+    - traefik.http.routers.accounting_account-manager.tls.certresolver=letsE
 
-    - traefik.http.routers.accounting_account-manager.middlewares=auth_api
-    - traefik.http.middlewares.auth_api.forwardauth.address=$WorkerIP:2021
+#    - traefik.http.routers.accounting_account-manager.middlewares=auth_api
+#    - traefik.http.middlewares.auth_api.forwardauth.address=$WorkerIP:2021
   ports:
    - 5011:5000
 
@@ -97,7 +97,7 @@ account-manager:
     - traefik.enable=true
 
     - traefik.http.services.accounting_authenticator.loadbalancer.server.port=2000
-    - traefik.http.routers.accounting_authenticator.rule=Host(`$WorkerIP`) #&& PathPrefix(`/authentiq/v1`)
+    - traefik.http.routers.accounting_authenticator.rule=Host(`$WorkerIP`) && PathPrefix(`/authentiq/v1/`)
     - traefik.http.routers.accounting_authenticator.entrypoints=websecure
     - traefik.http.routers.accounting_authenticator.tls=true
     - traefik.http.routers.accounting_authenticator.tls.certresolver=letsE

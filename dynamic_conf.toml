@@ -1,3 +1,9 @@
+#doc.traefik.io/traefik/https/tls
+[[tls.certificates]]
+  certFile = "/letsEncrypt/domain.cert"
+  keyFile = "/letsEncrypt/domain.key"
+
+#github.com/traefik/traefik/issues/5507
 [tls.options]
   [tls.options.default]
     minVersion = "VersionTLS13"

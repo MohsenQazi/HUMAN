@@ -2,7 +2,6 @@ version: '3.9'
 
 volumes:
  mongoDB:
- traefik-certificates:
 
 services:
  reverse-proxy:
@@ -10,16 +9,16 @@ services:
   command:
    - --providers.docker.swarmmode
    - --providers.docker.exposedbydefault=false # traefik.enable=true
-   - --providers.file.filename=./dynamic_conf.toml # https://github.com/traefik/traefik/issues/5507
+   - --providers.file.directory=/config # doc.traefik.io/traefik/providers/file/#filename
+   - --providers.file.watch=true
    - --entrypoints.web.address=:80
    - --entrypoints.websecure.address=:443
 #   - --entrypoints.api.address=:8000
 
-   - --certificatesresolvers.letsencrypt.acme.email=$MAIL
-   - --certificatesresolvers.letsencrypt.acme.storage=/letsEncrypt/acme.json
-   - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-   # rate limit in development
-   - --certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+#   - --certificatesresolvers.letsE.acme.tlschallenge=true
+#   - --certificatesresolvers.letsE.acme.email=$MAIL
+#   - --certificatesresolvers.letsE.acme.storage=/letsEncrypt/acme.json
+#   - --certificatesresolvers.letsE.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory #staging server for test/debug doc.traefik.io/traefik/https/acme/#caserver
 
    - --api # :8080/dashboard/
    - --log.level=DEBUG
@@ -33,7 +32,8 @@ services:
      mode: host
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock:ro
-   - traefik-certificates:/letsEncrypt
+   - ./dynamic_conf.toml:/config/dynamic_conf.toml:ro
+   - ./letsEncrypt/:/letsEncrypt/:ro
   deploy:
    restart_policy:
     condition: on-failure
@@ -51,10 +51,10 @@ services:
     - traefik.http.routers.traefik-https.rule=Host(`${DOMAIN}`)
     - traefik.http.routers.traefik-https.entrypoints=https
     - traefik.http.routers.traefik-https.tls=true
+    - traefik.http.routers.traefik-https.tls.certresolver=letsE
     - traefik.http.routers.traefik-https.service=api@internal
     - traefik.http.routers.traefik-https.middlewares=adminAuth,whiteListening
     - traefik.http.middlewares.adminAuth.basicauth.users=admin:${TraefikPass}
-    - traefik.http.routers.traefik-public-https.tls.certresolver=letsE
     
     - traefik.http.middlewares.whiteListening.ipwhitelist.sourcerange=${WhiteList}
 
@@ -77,7 +77,7 @@ account-manager:
     - traefik.http.routers.accounting_account-manager.rule=Host(`${DOMAIN}`) $$ PathPrefix(`/accountico/`)
     - traefik.http.routers.accounting_account-manager.entrypoints=websecure
     - traefik.http.routers.accounting_account-manager.tls=true
-    - traefik.http.routers.accounting_account-manager.tls.certresolver=letsE
+ #   - traefik.http.routers.accounting_account-manager.tls.certresolver=letsE
 
 #    - traefik.http.routers.accounting_account-manager.middlewares=auth_api
 #    - traefik.http.middlewares.auth_api.forwardauth.address=$WorkerIP:2021
@@ -100,7 +100,7 @@ account-manager:
     - traefik.http.routers.accounting_authenticator.rule=Host(`$WorkerIP`) && PathPrefix(`/authentiq/v1/`)
     - traefik.http.routers.accounting_authenticator.entrypoints=websecure
     - traefik.http.routers.accounting_authenticator.tls=true
-    - traefik.http.routers.accounting_authenticator.tls.certresolver=letsE
+#    - traefik.http.routers.accounting_authenticator.tls.certresolver=letsE
   ports:
    - 2011:2000
 

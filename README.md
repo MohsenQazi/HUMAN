@@ -4,9 +4,9 @@ docker build -t 127.0.0.1:5000/manage_app .
 docker build -t 127.0.0.1:5000/auth_app .
 ```
 
-Set some variable for Domain, Let's Encrypt, Traefik dashboard, IP Whitelistening:
+Set some variable for Domain, Traefik dashboard, IP Whitelistening:
 ```
-export DOMAIN=.... MAIL=.... TraefikPass=$(openssl passwd whoami) WhiteList="A, B, C"
+export DOMAIN=.... TraefikPass=$(openssl passwd whoami) WhiteList="A, B, C"
 WorkerIP=$(docker node inspect -f '{{ .Status.Addr }}' worker)
 ```
 

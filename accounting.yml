@@ -13,7 +13,7 @@ services:
    - --providers.file.watch=true
    - --entrypoints.web.address=:80
    - --entrypoints.websecure.address=:443
-#   - --entrypoints.api.address=:8000
+   - --entrypoints.api.address=:8000
 
 #   - --certificatesresolvers.letsE.acme.tlschallenge=true
 #   - --certificatesresolvers.letsE.acme.email=$MAIL
@@ -30,6 +30,9 @@ services:
    - target: 443
      published: 443
      mode: host
+   - target: 8000
+     published: 8000
+     mode:host
   volumes:
    - /var/run/docker.sock:/var/run/docker.sock:ro
    - ./dynamic_conf.toml:/config/dynamic_conf.toml:ro
@@ -57,15 +60,16 @@ services:
     - traefik.http.middlewares.adminAuth.basicauth.users=admin:${TraefikPass}
     
     - traefik.http.middlewares.whiteListening.ipwhitelist.sourcerange=${WhiteList}
+    - traefik.http.serives.api.loadbalancer.server.port=8000
 
 account-manager:
   image: 127.0.0.1:5000/manage_app
   environment:
-   - HOST=${DOMAIN}
+   - HOST=$DOMAIN
    - PORT=5011
    - AUTH_SERVER_ADDR=$WorkerIP
    - AUTH_SERVER_PORT=2011
-   - MONGO_SERVER_ADDR=${DOMAIN}
+   - MONGO_SERVER_ADDR=$WorkerIP
    - MONGO_SERVER_PORT=27017
   deploy:
    placement:
@@ -87,7 +91,7 @@ account-manager:
  authenticator:
   image: 127.0.0.1:5000/auth_app
   environment:
-   - AUTHENTIQ_DB_HOST=${DOMAIN}
+   - AUTHENTIQ_DB_HOST=$WorkerIP
    - AUTHENTIQ_DB_PORT=27017
    - AUTHENTIQ_DB_NAME=authentiq
   deploy:
@@ -111,7 +115,7 @@ account-manager:
    restart_policy:
     condition: on-failure
    placement:
-    constraints: [node.role==manager]
+    constraints: [node.role==worker]
    labels: [traefik.enable=false]
   ports:
    - 27017:27017
